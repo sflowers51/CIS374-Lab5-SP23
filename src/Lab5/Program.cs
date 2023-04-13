@@ -9,6 +9,9 @@ namespace Lab5
             UndirectedGraph undirectedGraph = new UndirectedGraph("../../../graphs/graph1.txt");
 
             Console.WriteLine(undirectedGraph);
+
+            var a = undirectedGraph.GetNodeByName("a");
+            undirectedGraph.DFS(a);
         }
     }
 }

@@ -163,6 +163,16 @@ namespace Lab5
             ResetNodeColor();
 
             Dictionary<Node, Node> pred = new Dictionary<Node, Node>();
+            
+            // initialize the nodes and the pred dictionary 
+            foreach(var node in Nodes)
+            {
+                pred[node] = null;
+
+                node.Color = Color.White;
+            }
+
+            DFSVisit(startingNode, pred);
 
             return pred;
         }
@@ -170,6 +180,18 @@ namespace Lab5
         // TODO
         private void DFSVisit(Node node, Dictionary<Node,Node> pred)
         {
+            node.Color = Color.Gray;
+
+            foreach( var neighbor in node.Neighbors)
+            {
+                if (neighbor.Color == Color.White)
+                {
+                    pred[neighbor] = node;
+
+                    DFSVisit(neighbor,pred);
+                }
+            }
+            node.Color = Color.Black;
            
         }
 
@@ -186,7 +208,12 @@ namespace Lab5
         public Dictionary<Node, (Node pred, int dist)> BFS(Node startingNode)
         {
             var resultDictionary = new Dictionary<Node, (Node pred, int dist)>();
-
+            //initialize the dictionary
+            foreach(var node in Nodes)
+            {
+                node.Color = Color.White;
+                resultDictionary[node] = (null, int.MaxValue)
+            }
             
             return resultDictionary;
         }
