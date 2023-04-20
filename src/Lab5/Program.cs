@@ -6,12 +6,15 @@ namespace Lab5
     {
         static void Main(string[] args)
         {
-            UndirectedGraph undirectedGraph = new UndirectedGraph("../../../graphs/graph1.txt");
+            UndirectedGraph undirectedGraph = new UndirectedGraph("../../../graphs/BeReal.txt");
 
             Console.WriteLine(undirectedGraph);
 
-            var a = undirectedGraph.GetNodeByName("a");
-            undirectedGraph.DFS(a);
+            //var startingNode = undirectedGraph.GetNodeByName("i");
+            //undirectedGraph.DFS(startingNode);
+
+            Console.WriteLine(undirectedGraph.IsReachable("gb", "mw"));
+
         }
     }
 }
