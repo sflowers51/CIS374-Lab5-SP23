@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace Lab5
@@ -26,14 +27,14 @@ namespace Lab5
                 using (StreamReader sr = new StreamReader(path))
                 {
                     string line;
-                    while( (line = sr.ReadLine()) != null )
+                    while ((line = sr.ReadLine()) != null)
                     {
                         line = line.Trim();
                         if (line == "")
                         {
                             continue;
                         }
-                        if(line[0] == '#')
+                        if (line[0] == '#')
                         {
                             continue;
                         }
@@ -49,7 +50,7 @@ namespace Lab5
             }
 
             // process the lines
-            if( lines.Count < 1 )
+            if (lines.Count < 1)
             {
                 // empty file
                 Console.WriteLine("Graph file was empty");
@@ -59,17 +60,17 @@ namespace Lab5
             // Add nodes
             string[] nodeNames = Regex.Split(lines[0], @"\W+");
 
-            foreach(var name in nodeNames)
+            foreach (var name in nodeNames)
             {
                 Nodes.Add(new Node(name));
             }
 
             // Add edges
-            for( int i = 1; i < lines.Count; i++)
+            for (int i = 1; i < lines.Count; i++)
             {
                 // extract node names
                 nodeNames = Regex.Split(lines[i], @"\W+");
-                if( nodeNames.Length < 2)
+                if (nodeNames.Length < 2)
                 {
                     throw new Exception("Two nodes are required for each edge.");
                 }
@@ -87,7 +88,7 @@ namespace Lab5
             Node node1 = GetNodeByName(nodename1);
             Node node2 = GetNodeByName(nodename2);
 
-            if( node1 == null || node2 == null)
+            if (node1 == null || node2 == null)
             {
                 throw new Exception("Invalid node name");
             }
@@ -112,11 +113,10 @@ namespace Lab5
             return node;
         }
 
-        // TODO
-         /**
-         * <summary> Returns the number of connected components in the graph .</summary>
-         */
-        
+        /**
+        * <summary> Returns the number of connected components in the graph .</summary>
+        */
+
         public int ConnectedComponents
         {
             get
@@ -124,16 +124,27 @@ namespace Lab5
                 int connectedComponents = 0;
 
                 // for all the nodes
-                //     if node is white
-                //        connectedComponents++
-                //        explore the neighbors
-                //        
+                foreach(var node in Nodes)
+                {
+                    //     if node is white
+                    if (node.Color == Color.White)
+                    {
+                        //connectedComponents++
+                        connectedComponents++;
+
+                        //explore the neighbors                       
+                        DFSVisit(node, new Dictionary<Node, Node>());
+
+                    }
+
+                }
+
+
 
                 return connectedComponents;
             }
         }
 
-        // TODO
 
         /// <summary>
         /// 
@@ -145,10 +156,15 @@ namespace Lab5
         {
             ResetNodeColor();
 
-            return false;
+            var node1 = GetNodeByName(nodename1);
+
+            var node2 = GetNodeByName(nodename2);
+
+            DFSVisit(node1, node2);
+
+            return node2.Color == Color.Black;
         }
 
-        // TODO
         /// <summary>
         /// Searches the graph in a depth-first manner, creating a
         /// dictionary of the Node to Predessor Node links discovered by starting at the given node.
@@ -163,7 +179,7 @@ namespace Lab5
             Dictionary<Node, Node> pred = new Dictionary<Node, Node>();
 
             // intialize nodes and the pred dictionary
-            foreach( var node in Nodes)
+            foreach (var node in Nodes)
             {
                 pred[node] = null;
                 node.Color = Color.White;
@@ -174,16 +190,17 @@ namespace Lab5
             return pred;
         }
 
-        // TODO
-        private void DFSVisit(Node node, Dictionary<Node,Node> pred)
+        private void DFSVisit(Node node, Dictionary<Node, Node> pred)
         {
+            Console.WriteLine( node.Color);
             Console.WriteLine(node);
+            Console.WriteLine("");
             node.Color = Color.Gray;
 
             // sort the neighbors so that we will visit in alphabetical order
             node.Neighbors.Sort();
 
-            foreach ( var neighbor in node.Neighbors )
+            foreach (var neighbor in node.Neighbors)
             {
                 if (neighbor.Color == Color.White)
                 {
@@ -191,10 +208,10 @@ namespace Lab5
                     DFSVisit(neighbor, pred);
                 }
             }
+
             node.Color = Color.Black;
         }
 
-        // TODO
         /// <summary>
         /// Searches the graph in a breadth-first manner, creating a
         /// dictionary of the Node to Predecessor and Distance discovered by starting at the given node.
@@ -209,7 +226,7 @@ namespace Lab5
             var resultDictionary = new Dictionary<Node, (Node pred, int dist)>();
 
             // initialize the dictionary
-            foreach(var node in Nodes)
+            foreach (var node in Nodes)
             {
                 node.Color = Color.White;
                 resultDictionary[node] = (null, int.MaxValue);
@@ -225,20 +242,19 @@ namespace Lab5
 
             // iteratively traverse the graph
 
-            while( queue.Count > 0 )
+            while (queue.Count > 0)
             {
                 // u = head(Q)
                 var node = queue.Peek();
 
                 // We should sort Neighbors first
-                node.Neighbors.Sort();
 
-                foreach( var neighbor in node.Neighbors )
+                foreach (var neighbor in node.Neighbors)
                 {
-                    if( neighbor.Color == Color.White)
+                    if (neighbor.Color == Color.White)
                     {
                         int distance = resultDictionary[node].ToTuple().Item2;
-                        resultDictionary[neighbor] = (node, distance+1);
+                        resultDictionary[neighbor] = (node, distance + 1);
                         neighbor.Color = Color.Gray;
                         queue.Enqueue(neighbor);
                     }
@@ -246,14 +262,11 @@ namespace Lab5
 
                 queue.Dequeue();
                 node.Color = Color.Black;
-               
-            }
 
-            
+            }
             return resultDictionary;
         }
 
-        // TODO
         /// <summary>
         /// 
         /// </summary>
@@ -262,16 +275,32 @@ namespace Lab5
         /// <returns></returns>
         private bool DFSVisit(Node currentNode, Node endingNode)
         {
-            // return true if endingNode is found
+            if (currentNode == endingNode)
+            {
+                // return true if endingNode is found
+                return true;
+            }
+
+            var pred = DFS(currentNode);
+            DFSVisit(currentNode, pred);
+
+            foreach (var neighbor in currentNode.Neighbors)
+            {
+                
+                if (neighbor.Color == Color.White)
+                {
+                    DFSVisit(neighbor, endingNode);                    
+                }
+            }
+
 
             // return false if endingNode is NOT found after visiting ALL connected nodes
-
             return false;
         }
 
         private void ResetNodeColor()
         {
-            foreach(var node in Nodes)
+            foreach (var node in Nodes)
             {
                 node.Color = Color.White;
             }
@@ -291,7 +320,7 @@ namespace Lab5
                     str += ", ";
                 }
 
-                
+
                 str += Environment.NewLine;
             }
             return str;
